@@ -1,0 +1,69 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    maven {
+      name = 'fabricmc'
+      url = 'https://maven.fabricmc.net'
+    }
+    maven {
+      name = 'minecraftforge'
+      url = 'https://files.minecraftforge.net/maven'
+    }
+    maven {
+      name = 'jitpack'
+      url = 'https://jitpack.io'
+    }
+  }
+  dependencies {
+    classpath "io.github.Chocohead:fabric-loom:$loom"
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'fabric-loom'
+
+archivesBaseName = rootProject.name
+group = domain
+version = revision
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+minecraft {
+  refmapName = "mixins/$namespace/refmap.json"
+  runDir = 'run'
+}
+
+dependencies {
+  minecraft "com.mojang:minecraft:$game"
+  mappings "net.fabricmc:yarn:$game+$mappings:enigma@zip"
+  modCompile "net.fabricmc:fabric-loader:$loader"
+  implementation "net.fabricmc:yarn:$game+$mappings"
+  implementation "com.google.code.findbugs:jsr305:$findbugs"
+}
+
+processResources {
+  def metadata = [
+    'fabric.mod.json', 'pack.mcmeta',
+    "mixins/$namespace/mixins.json"
+  ]
+  sourceSets.main.resources.srcDirs.with {
+    from(it) {
+      include metadata
+      expand version: version, refmap: minecraft.refmapName
+    }
+    from(it) {
+      exclude metadata
+    }
+  }
+}
+
+tasks.withType(JavaCompile) {
+  options.compilerArgs += [
+    '-Xlint:all',
+    '-XprintRounds',
+    '-XprintProcessorInfo',
+    '-encoding', 'UTF-8',
+    '-Xmaxerrs', Integer.MAX_VALUE,
+    '-Xmaxwarns', Integer.MAX_VALUE
+  ]
+}
